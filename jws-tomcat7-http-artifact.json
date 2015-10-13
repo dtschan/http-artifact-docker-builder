@@ -1,0 +1,282 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "jws-tomcat7-http-artifact",
+        "namespace": "test",
+        "selfLink": "/oapi/v1/namespaces/test/templates/jws-tomcat7-http-artifact",
+        "uid": "e4c6be2d-71b2-11e5-a33d-0050569723a0",
+        "resourceVersion": "153666",
+        "creationTimestamp": "2015-10-13T14:01:26Z",
+        "annotations": {
+            "description": "Application template for JWS applications built using an artifact provided through HTTP.",
+            "iconClass": "icon-tomcat"
+        }
+    },
+    "objects": [
+        {
+            "apiVersion": "v1",
+            "kind": "Service",
+            "metadata": {
+                "annotations": {
+                    "description": "The web server's http port."
+                },
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "name": "${APPLICATION_NAME}"
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "port": 8080,
+                        "targetPort": 8080
+                    }
+                ],
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}"
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "id": "${APPLICATION_NAME}-http-route",
+            "kind": "Route",
+            "metadata": {
+                "annotations": {
+                    "description": "Route for application's http service."
+                },
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "name": "${APPLICATION_NAME}-http-route"
+            },
+            "spec": {
+                "host": "${APPLICATION_HOSTNAME}",
+                "to": {
+                    "name": "${APPLICATION_NAME}"
+                }
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "ImageStream",
+            "metadata": {
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "name": "${APPLICATION_NAME}"
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "BuildConfig",
+            "metadata": {
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "name": "${APPLICATION_NAME}"
+            },
+            "spec": {
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${APPLICATION_NAME}:latest"
+                    }
+                },
+                "strategy": {
+                    "customStrategy": {
+                        "env": [
+                            {
+                                "name": "DOCKERFILE_URL",
+                                "value": "${DOCKERFILE_URL}"
+                            },
+                            {
+                                "name": "ARTIFACT_URL",
+                                "value": "${ARTIFACT_URL}"
+                            },
+                            {
+                                "name": "http_proxy",
+                                "value": "http://localhost:3128/"
+                            },
+                            {
+                                "name": "https_proxy",
+                                "value": "http://localhost:3128/"
+                            },
+                            {
+                                "name": "no_proxy",
+                                "value": "127.0.0.1,localhost,172.27.40.68,.pnet.ch,172.28.39.140"
+                            }
+                        ],
+                        "exposeDockerSocket": true,
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "http-artifact-docker-builder:latest",
+                            "namespace": "openshift"
+                        }
+                    },
+                    "type": "Custom"
+                },
+                "triggers": [
+                    {
+                        "generic": {
+                            "secret": "${GENERIC_TRIGGER_SECRET}"
+                        },
+                        "type": "Generic"
+                    },
+                    {
+                        "imageChange": {},
+                        "type": "ImageChange"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "v1",
+            "kind": "DeploymentConfig",
+            "metadata": {
+                "labels": {
+                    "application": "${APPLICATION_NAME}"
+                },
+                "name": "${APPLICATION_NAME}"
+            },
+            "spec": {
+                "replicas": 1,
+                "selector": {
+                    "deploymentConfig": "${APPLICATION_NAME}"
+                },
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "application": "${APPLICATION_NAME}",
+                            "deploymentConfig": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "env": [
+                                    {
+                                        "name": "JWS_ADMIN_USERNAME",
+                                        "value": "${JWS_ADMIN_USERNAME}"
+                                    },
+                                    {
+                                        "name": "JWS_ADMIN_PASSWORD",
+                                        "value": "${JWS_ADMIN_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "http_proxy",
+                                        "value": "http://localhost:3128/"
+                                    },
+                                    {
+                                        "name": "https_proxy",
+                                        "value": "http://localhost:3128/"
+                                    },
+                                    {
+                                        "name": "no_proxy",
+                                        "value": "127.0.0.1,localhost,172.27.40.68,.pnet.ch,172.28.39.140"
+                                    }
+                                ],
+                                "image": "${APPLICATION_NAME}",
+                                "imagePullPolicy": "Always",
+                                "name": "${APPLICATION_NAME}",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "name": "http",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/bin/bash",
+                                            "-c",
+                                            "curl -s -u ${JWS_ADMIN_USERNAME}:${JWS_ADMIN_PASSWORD} 'http://localhost:8080/manager/jmxproxy/?get=Catalina%3Atype%3DServer\u0026att=stateName' |grep -iq 'stateName *= *STARTED'"
+                                        ]
+                                    }
+                                },
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/secret-volume",
+                                        "name": "secret-volume",
+                                        "readOnly": true
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "secret-volume",
+                                "secret": {
+                                    "secretName": "jenkins-secret"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME}"
+                            ],
+                            "from": {
+                                "kind": "ImageStream",
+                                "name": "${APPLICATION_NAME}"
+                            }
+                        },
+                        "type": "ImageChange"
+                    }
+                ]
+            }
+        }
+    ],
+    "parameters": [
+        {
+            "name": "APPLICATION_NAME",
+            "description": "The name for the application.",
+            "value": "jws-app"
+        },
+        {
+            "name": "APPLICATION_HOSTNAME",
+            "description": "Custom hostname for service routes.  Leave blank for default hostname, e.g.: \u003capplication-name\u003e.\u003cproject\u003e.\u003cdefault-domain-suffix\u003e"
+        },
+        {
+            "name": "DOCKERFILE_URL",
+            "description": "URL of Dockerfile to use",
+            "value": "http://jenkinsit.pnet.ch/job/test-openshift/lastSuccessfulBuild/artifact/Dockerfile"
+        },
+        {
+            "name": "ARTIFACT_URL",
+            "description": "URL of artifact to deploy",
+            "value": "http://jenkinsit.pnet.ch/job/test-openshift/lastSuccessfulBuild/artifact/ROOT.war"
+        },
+        {
+            "name": "JWS_ADMIN_USERNAME",
+            "description": "JWS Admin User",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        },
+        {
+            "name": "JWS_ADMIN_PASSWORD",
+            "description": "JWS Admin Password",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        },
+        {
+            "name": "GENERIC_TRIGGER_SECRET",
+            "description": "Generic build trigger secret",
+            "generate": "expression",
+            "from": "[a-zA-Z0-9]{8}"
+        }
+    ],
+    "labels": {
+        "template": "jws-tomcat7-http-artifact"
+    }
+}
