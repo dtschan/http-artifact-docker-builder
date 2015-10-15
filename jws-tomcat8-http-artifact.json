@@ -2,12 +2,8 @@
     "kind": "Template",
     "apiVersion": "v1",
     "metadata": {
-        "name": "jws-tomcat7-http-artifact",
-        "namespace": "test",
-        "selfLink": "/oapi/v1/namespaces/test/templates/jws-tomcat7-http-artifact",
-        "uid": "e4c6be2d-71b2-11e5-a33d-0050569723a0",
-        "resourceVersion": "153666",
-        "creationTimestamp": "2015-10-13T14:01:26Z",
+        "name": "jws-tomcat8-http-artifact",
+        "namespace": "openshift",
         "annotations": {
             "description": "Application template for JWS applications built using an artifact provided through HTTP.",
             "iconClass": "icon-tomcat"
@@ -94,18 +90,6 @@
                             {
                                 "name": "ARTIFACT_URL",
                                 "value": "${ARTIFACT_URL}"
-                            },
-                            {
-                                "name": "http_proxy",
-                                "value": "http://localhost:3128/"
-                            },
-                            {
-                                "name": "https_proxy",
-                                "value": "http://localhost:3128/"
-                            },
-                            {
-                                "name": "no_proxy",
-                                "value": "127.0.0.1,localhost,172.27.40.68,.pnet.ch,172.28.39.140"
                             }
                         ],
                         "exposeDockerSocket": true,
@@ -113,7 +97,15 @@
                             "kind": "ImageStreamTag",
                             "name": "http-artifact-docker-builder:latest",
                             "namespace": "openshift"
-                        }
+                        },
+                        "secrets": [
+                            {
+                                "mountPath": "/etc/secret-volume",
+                                "secretSource": {
+                                    "name": "jenkins-secret"
+                                }
+                            }
+                        ]
                     },
                     "type": "Custom"
                 },
@@ -167,18 +159,6 @@
                                     {
                                         "name": "JWS_ADMIN_PASSWORD",
                                         "value": "${JWS_ADMIN_PASSWORD}"
-                                    },
-                                    {
-                                        "name": "http_proxy",
-                                        "value": "http://localhost:3128/"
-                                    },
-                                    {
-                                        "name": "https_proxy",
-                                        "value": "http://localhost:3128/"
-                                    },
-                                    {
-                                        "name": "no_proxy",
-                                        "value": "127.0.0.1,localhost,172.27.40.68,.pnet.ch,172.28.39.140"
                                     }
                                 ],
                                 "image": "${APPLICATION_NAME}",
@@ -199,21 +179,6 @@
                                             "curl -s -u ${JWS_ADMIN_USERNAME}:${JWS_ADMIN_PASSWORD} 'http://localhost:8080/manager/jmxproxy/?get=Catalina%3Atype%3DServer\u0026att=stateName' |grep -iq 'stateName *= *STARTED'"
                                         ]
                                     }
-                                },
-                                "volumeMounts": [
-                                    {
-                                        "mountPath": "/etc/secret-volume",
-                                        "name": "secret-volume",
-                                        "readOnly": true
-                                    }
-                                ]
-                            }
-                        ],
-                        "volumes": [
-                            {
-                                "name": "secret-volume",
-                                "secret": {
-                                    "secretName": "jenkins-secret"
                                 }
                             }
                         ]
@@ -249,13 +214,11 @@
         },
         {
             "name": "DOCKERFILE_URL",
-            "description": "URL of Dockerfile to use",
-            "value": "http://jenkinsit.pnet.ch/job/test-openshift/lastSuccessfulBuild/artifact/Dockerfile"
+            "description": "URL of Dockerfile to use"
         },
         {
             "name": "ARTIFACT_URL",
-            "description": "URL of artifact to deploy",
-            "value": "http://jenkinsit.pnet.ch/job/test-openshift/lastSuccessfulBuild/artifact/ROOT.war"
+            "description": "URL of artifact to deploy"
         },
         {
             "name": "JWS_ADMIN_USERNAME",
@@ -277,6 +240,6 @@
         }
     ],
     "labels": {
-        "template": "jws-tomcat7-http-artifact"
+        "template": "jws-tomcat8-http-artifact"
     }
 }
