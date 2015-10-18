@@ -22,7 +22,8 @@ else
   CURL_OPTS=""
 fi
 
-curl ${CURL_OPTS} ${DOCKERFILE_URL} -O
+curl ${CURL_OPTS} ${DOCKER_CONTEXT_URL} -o docker-context.tar.gz
+tar xvfz docker-context.tar.gz
 
 popd
 docker build --rm -t "${TAG}" "${BUILD_DIR}"
