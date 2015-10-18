@@ -36,8 +36,8 @@ if [ -n "${OUTPUT_IMAGE}" ] || [ -s "/root/.dockercfg" ]; then
   docker push "${TAG}"
 
   if [ -e ${BUILD_DIR}/.build_tag ]; then
-    BUILD_TAG="${OUTPUT_REGISTRY}/"`cat ${BUILD_DIR}/.build_tag`
-    docker tag "${TAG}" "${BUILD_TAG}"
+    BUILD_TAG="${OUTPUT_REGISTRY}/"`dirname ${OUTPUT_IMAGE}`/`cat ${BUILD_DIR}/.build_tag`
+    docker tag -f "${TAG}" "${BUILD_TAG}"
     docker push "${BUILD_TAG}"
   fi
 fi
