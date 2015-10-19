@@ -24,6 +24,7 @@ fi
 
 curl ${CURL_OPTS} ${DOCKER_CONTEXT_URL} -o docker-context.tar.gz
 tar xvfz docker-context.tar.gz
+rm -f docker-context.tar.gz
 
 popd
 docker build --rm -t "${TAG}" "${BUILD_DIR}"
@@ -35,8 +36,8 @@ fi
 if [ -n "${OUTPUT_IMAGE}" ] || [ -s "/root/.dockercfg" ]; then
   docker push "${TAG}"
 
-  if [ -e ${BUILD_DIR}/.build_tag ]; then
-    BUILD_TAG="${TAG}:"`cat ${BUILD_DIR}/.build_tag`
+  if [ -e "${BUILD_DIR}/.build_tag" ]; then
+    BUILD_TAG="${TAG%:*}:"`cat ${BUILD_DIR}/.build_tag`
     docker tag -f "${TAG}" "${BUILD_TAG}"
     docker push "${BUILD_TAG}"
   fi
