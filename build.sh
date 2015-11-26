@@ -26,6 +26,8 @@ curl ${CURL_OPTS} ${DOCKER_CONTEXT_URL} -o docker-context.tar.gz
 tar xvfz docker-context.tar.gz
 rm -f docker-context.tar.gz
 
+echo -e ".build_tag\n.d2i" >> .dockerignore
+
 popd
 docker build --rm -t "${TAG}" "${BUILD_DIR}"
 
@@ -40,5 +42,9 @@ if [ -n "${OUTPUT_IMAGE}" ] || [ -s "/root/.dockercfg" ]; then
     BUILD_TAG="${TAG%:*}:"`cat ${BUILD_DIR}/.build_tag`
     docker tag -f "${TAG}" "${BUILD_TAG}"
     docker push "${BUILD_TAG}"
+
+    if [ -x "${BUILD_DIR}/.d2i/post_build" ]; then
+      "${BUILD_DIR}/.d2i/post_build" "$BUILD_DIR" "$TAG"
+    fi
   fi
 fi
