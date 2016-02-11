@@ -29,6 +29,11 @@ rm -f docker-context.tar.gz
 echo -e ".build_tag\n.d2i" >> .dockerignore
 
 popd
+
+if [ -x "${BUILD_DIR}/.d2i/pre_build" ]; then
+  "${BUILD_DIR}/.d2i/pre_build" "$BUILD_DIR" "$TAG"
+fi
+
 docker build --rm -t "${TAG}" "${BUILD_DIR}"
 
 if [[ -d /var/run/secrets/openshift.io/push ]] && [[ ! -e /root/.dockercfg ]]; then
