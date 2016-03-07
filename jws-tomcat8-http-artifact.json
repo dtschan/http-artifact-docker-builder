@@ -3,7 +3,7 @@
     "apiVersion": "v1",
     "metadata": {
         "name": "jws-tomcat8-http-artifact",
-        "namespace": "openshift",
+        "creationTimestamp": null,
         "annotations": {
             "description": "Application template for JWS applications built using an artifact provided through HTTP.",
             "iconClass": "icon-tomcat"
@@ -84,19 +84,15 @@
                     "customStrategy": {
                         "env": [
                             {
-                                "name": "DOCKERFILE_URL",
-                                "value": "${DOCKERFILE_URL}"
-                            },
-                            {
-                                "name": "ARTIFACT_URL",
-                                "value": "${ARTIFACT_URL}"
+                                "name": "DOCKER_CONTEXT_URL",
+                                "value": "${DOCKER_CONTEXT_URL}"
                             }
                         ],
                         "exposeDockerSocket": true,
                         "from": {
                             "kind": "ImageStreamTag",
                             "name": "http-artifact-docker-builder:latest",
-                            "namespace": "openshift"
+                            "namespace": "custom-builder"
                         },
                         "secrets": [
                             {
@@ -213,12 +209,8 @@
             "description": "Custom hostname for service routes.  Leave blank for default hostname, e.g.: \u003capplication-name\u003e.\u003cproject\u003e.\u003cdefault-domain-suffix\u003e"
         },
         {
-            "name": "DOCKERFILE_URL",
-            "description": "URL of Dockerfile to use"
-        },
-        {
-            "name": "ARTIFACT_URL",
-            "description": "URL of artifact to deploy"
+            "name": "DOCKER_CONTEXT_URL",
+            "description": "URL of Docker Context tarball to use"
         },
         {
             "name": "JWS_ADMIN_USERNAME",
