@@ -1,0 +1,43 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "PolicyBinding",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "shared-resource-viewers"
+            },
+            "policyRef": {
+                "namespace": "openshift",
+                "name": "default"
+            },
+            "roleBindings": [
+                {
+                    "name": "shared-resource-viewers",
+                    "roleBinding": {
+                        "metadata": {
+                            "name": "shared-resource-viewers",
+                            "namespace": "custom-builder"
+                        },
+                        "userNames": [],
+                        "groupNames": [
+                            "system:authenticated"
+                        ],
+                        "subjects": [
+                            {
+                                "kind": "SystemGroup",
+                                "name": "system:authenticated"
+                            }
+                        ],
+                        "roleRef": {
+                            "namespace": "openshift",
+                            "name": "shared-resource-viewer"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
