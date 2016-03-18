@@ -23,6 +23,13 @@ else
   CURL_OPTS=""
 fi
 
+# Artifact URL is delivered by OpenShift 3 Jenkins Plugin in Git Commit parameter
+ARTIFACT_URL=`echo "${BUILD}" | jq -r .spec.revision.git.commit`
+
+if [ -n "${ARTIFACT_URL}" ]; then
+  DOCKER_CONTEXT_URL="${ARTIFACT_URL}"
+fi
+
 curl ${CURL_OPTS} ${DOCKER_CONTEXT_URL} -o docker-context.tar.gz
 tar xvfz docker-context.tar.gz
 rm -f docker-context.tar.gz
