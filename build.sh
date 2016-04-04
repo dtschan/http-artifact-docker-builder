@@ -26,7 +26,7 @@ fi
 # Artifact URL is delivered by OpenShift 3 Jenkins Plugin in Git Commit parameter
 ARTIFACT_URL=`echo "${BUILD}" | jq -r .spec.revision.git.commit`
 
-if [ -n "${ARTIFACT_URL}" ]; then
+if [ -n "${ARTIFACT_URL}" ] || [ ${ARTIFACT_URL} != "null" ]; then
   DOCKER_CONTEXT_URL="${ARTIFACT_URL}"
 fi
 
