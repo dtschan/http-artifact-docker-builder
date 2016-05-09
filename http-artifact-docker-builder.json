@@ -1,0 +1,99 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {},
+    "items": [
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "ose-docker-builder",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "http-artifact-docker-builder"
+                }
+            },
+            "spec": {
+                "dockerImageRepository": "registry.access.redhat.com/openshift3/ose-docker-builder:v3.0.2.0"
+            },
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "http-artifact-docker-builder",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "http-artifact-docker-builder"
+                }
+            },
+            "spec": {},
+            "status": {
+                "dockerImageRepository": ""
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "http-artifact-docker-builder",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "http-artifact-docker-builder"
+                }
+            },
+            "spec": {
+                "triggers": [
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secret": "EJAK3vV-DCEb9Ry4b08g"
+                        }
+                    },
+                    {
+                        "type": "Generic",
+                        "generic": {
+                            "secret": "tr6TLoLSTjp4y3Xhp9FR"
+                        }
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChange": {}
+                    }
+                ],
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "https://github.com/puzzle/http-artifact-docker-builder",
+                        "ref": "dev"
+                    }
+                },
+                "strategy": {
+                    "type": "Docker",
+                    "dockerStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "ose-docker-builder:v3.0.2.0"
+                        }
+                    }
+                },
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "http-artifact-docker-builder:latest"
+                    }
+                },
+                "resources": {}
+            },
+            "status": {
+                "lastVersion": 0
+            }
+        }
+    ]
+}
